@@ -88,9 +88,9 @@ function frame() {
     // dz -= 1*dt;
     angle += (Math.PI*dt/20);
     clear()
-    for (const v of vs) {
-        point(screen(project(translate_z(rotate_x_to_z(v, angle), dz))), POINTSIZE)
-    }
+    // for (const v of vs) {
+    //     point(screen(project(translate_z(rotate_x_to_z(v, angle), dz))), POINTSIZE)
+    // }
     for (const f of fs) {
         for (let i = 0; i < f.length; ++i) {
             const a = vs[f[i]];
@@ -119,3 +119,4 @@ function frame() {
     setTimeout(frame, 1000/FPS);
 }
 setTimeout(frame, 1000/FPS);
+
