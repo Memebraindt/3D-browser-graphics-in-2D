@@ -1,122 +1,50 @@
-const BACKGROUNDCOLOR = "#101010"
-const FOREGROUNDCOLOR = "#50FF50"
-const POINTSIZE = 20
-const LINEWIDTH = 3
+// index.js
 
-console.log(game)
-game.width = 800
-game.height = 800
-const ctx = game.getContext("2d")
-console.log(ctx)
+let currentScene = Scene1; // По умолчанию
+const trailCheckbox = document.getElementById('trailMode'); // Получаем доступ к чекбоксу
 
-function clear() {
-    ctx.fillStyle = BACKGROUNDCOLOR
-    ctx.fillRect(0, 0, game.width, game.height)
-}
-
-function point({x, y}, s){
-    ctx.fillStyle = FOREGROUNDCOLOR
-    ctx.fillRect(x - s/2, y - s/2, s, s)
-}
-
-function line(p1, p2) {
-    ctx.lineWidth = LINEWIDTH
-    ctx.strokeStyle = FOREGROUNDCOLOR
-    ctx.beginPath();
-    ctx.moveTo(p1.x, p1.y);
-    ctx.lineTo(p2.x, p2.y);
-    ctx.stroke();
-}
-
-function screen(p){
-    return {
-            x: (p.x + 1)/2*game.width,
-            y: (1 - (p.y + 1)/2)*game.height,
+// Обработка переключения радио-кнопок
+const radios = document.querySelectorAll('input[name="scene"]');
+radios.forEach(radio => {
+    radio.addEventListener('change', (e) => {
+        if (e.target.value === 'scene1') {
+            currentScene = Scene1;
+        } else if (e.target.value === 'scene2') {
+            currentScene = Scene2;
+        } else if (e.target.value === 'scene3') {
+            currentScene = Scene3;
         }
-}
+    });
+});
 
-function project({x, y, z}) {
-    return {
-        x: x/z,
-        y: y/z,
-    }
-}
-
-const FPS = 60;
-
-function translate_z({x, y, z}, dz) {
-    return {x, y, z: z + dz};
-}
-
-function rotate_x_to_z({x, y, z}, angle) {
-    const c = Math.cos(angle);
-    const s = Math.sin(angle);
-    return {
-        x: x*c - z*s,
-        y,
-        z: x*s + z*c,
-    };
-}
-
-function rotate_y_to_z({x, y, z}, angle) {
-    const c = Math.cos(angle);
-    const s = Math.sin(angle);
-    return {
-        x,
-        y: y*c - z*s,
-        z: y*s + z*c,
-    };
-}
-
-function rotate_x_to_y({x, y, z}, angle) {
-    const c = Math.cos(angle);
-    const s = Math.sin(angle);
-    return {
-        x: x*c - y*s,
-        y: x*s + y*c,
-        z,
-    };
-}
-
-
-let dz = 1.0;
-let angle = 0;
-clear()
-
+// Игровой цикл
 function frame() {
-    const dt = 1/FPS;
-    // dz -= 1*dt;
-    angle += (Math.PI*dt/20);
-    clear()
-    // for (const v of vs) {
-    //     point(screen(project(translate_z(rotate_x_to_z(v, angle), dz))), POINTSIZE)
-    // }
-    for (const f of fs) {
-        for (let i = 0; i < f.length; ++i) {
-            const a = vs[f[i]];
-            const b = vs[f[(i+1)%f.length]];
-            line(screen(project(translate_z(rotate_x_to_z(a, angle), dz))),
-                 screen(project(translate_z(rotate_x_to_z(b, angle), dz))))
+    const dt = 1 / CONSTANTS.FPS;
 
-            line(screen(project(translate_z(rotate_x_to_z(a, -angle), dz))),
-                 screen(project(translate_z(rotate_x_to_z(b, -angle), dz))))
+    // ЛОГИКА ШЛЕЙФА:
+    // Если галочка стоит, мы очищаем экран лишь на 10% (0.1), 
+    // оставляя 90% предыдущего изображения.
+    // Если галочка не стоит, очищаем на 100% (1.0).
+    const opacity = trailCheckbox.checked ? 0.1 : 1.0;
 
+    // 1. Очистка (с учетом режима)
+    clearCanvas(opacity);
 
-            line(screen(project(translate_z(rotate_y_to_z(a, angle), dz))),
-                 screen(project(translate_z(rotate_y_to_z(b, angle), dz))))
-
-            line(screen(project(translate_z(rotate_y_to_z(a, -angle), dz))),
-                 screen(project(translate_z(rotate_y_to_z(b, -angle), dz))))
-
-            
-            line(screen(project(translate_z(rotate_x_to_y(a, angle), dz))),
-                 screen(project(translate_z(rotate_x_to_y(b, angle), dz))))
-
-            line(screen(project(translate_z(rotate_x_to_y(a, -angle), dz))),
-                 screen(project(translate_z(rotate_x_to_y(b, -angle), dz))))
-        }
+    // 2. Обновление логики текущей сцены
+    if (currentScene && currentScene.update) {
+        currentScene.update(dt);
     }
-    setTimeout(frame, 1000/FPS);
-}
-setTimeout(frame, 1000/FPS);
 
+    // 3. Отрисовка
+    if (currentScene && currentScene.draw) {
+        // Небольшой хак: если включен шлейф, можно делать линии тоньше, 
+        // чтобы рисунок был более детальным
+        ctx.lineWidth = trailCheckbox.checked ? 1 : CONSTANTS.LINE_WIDTH;
+        
+        currentScene.draw();
+    }
+    setTimeout(frame, 1000 / CONSTANTS.FPS);
+}
+
+// Запуск
+frame();
