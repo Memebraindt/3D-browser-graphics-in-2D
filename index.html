@@ -1,3 +1,73 @@
-<canvas id="game"></canvas>
-<script src="cube.js"></script>
-<script src="index.js"></script>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>3D Canvas Engine</title>
+    <style>
+        body {
+            background-color: #050505;
+            color: #50FF50;
+            font-family: monospace;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #controls {
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #333;
+            background: #101010;
+            border-radius: 8px;
+        }
+
+        label {
+            margin: 0 10px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        canvas {
+            background-color: #101010;
+            box-shadow: 0 0 20px rgba(80, 255, 80, 0.1);
+            border: 1px solid #333;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="controls">
+        <span>Choose your destiny: </span>
+        <label>
+            <input type="radio" name="scene" value="scene1" checked> 
+            Simple Cube
+        </label>
+        <label>
+            <input type="radio" name="scene" value="scene2"> 
+            Simple Pyramid
+        </label>
+        <label>
+            <input type="radio" name="scene" value="scene3"> 
+            Chaos Cube
+        </label>
+      
+        <div style="margin-top: 10px; border-top: 1px solid #333; padding-top: 10px;">
+        <label>
+            <input type="checkbox" id="trailMode"> 
+            Режим шлейфа (Trails)
+        </label>
+        </div>
+    </div>
+
+    <canvas id="game"></canvas>
+
+    <!-- Подключаем скрипты в правильном порядке -->
+    <script src="shapes.js"></script>
+    <script src="engine.js"></script>
+    <script src="scenes.js"></script>
+    <script src="index.js"></script>
+</body>
+</html>
