@@ -78,3 +78,57 @@ const Scene3 = {
         });
     }
 };
+
+const Scene4 = {
+    state: {
+        angle: 0,
+        drawProgress: 0, // От 0 до 1 (0% до 100% пути)
+        speed: 0.2,      // Скорость рисования
+        dz: 3.5          // Отдаление камеры
+    },
+    update: function(dt) {
+        // Медленное вращение для 3D эффекта
+        this.state.angle += dt * 0.5;
+
+        // Анимация рисования линии
+        // Если прогресс < 1, увеличиваем его. Если >= 1, сбрасываем (зацикливаем для красоты)
+        this.state.drawProgress += dt * this.state.speed;
+        if (this.state.drawProgress > 1.6) { // 1.2 чтобы была пауза, когда фигура полная
+            this.state.drawProgress = 0;
+        }
+    },
+    draw: function() {
+        const { angle, drawProgress, dz } = this.state;
+        // angle = 0;
+        // Трансформация: вращаем и отодвигаем
+        const transformFn = (v) => {
+            let res = Math3D.rotateY(v, angle); // Вращаем как монету
+            res = Math3D.rotateZ(res, Math.sin(angle * 0.5) * 0.2); // Немного покачиваем
+            return Math3D.translateZ(res, dz);
+        };
+
+        // --- МАГИЯ ОТРИСОВКИ ЧАСТИ ФИГУРЫ ---
+        
+        // 1. Берем полную фигуру
+        const fullShape = VOYNICH_SHAPE;
+        
+        // 2. Вычисляем, сколько точек нужно нарисовать сейчас
+        // Всего точек в пути
+        const totalPoints = fullShape.fs[0].length; 
+        // Сколько рисуем (минимум 2 точки, максимум все)
+        const visibleCount = Math.max(2, Math.floor(totalPoints * Math.min(1, drawProgress)));
+        
+        // 3. Создаем временную фигуру, у которой путь обрезан
+        const partialPath = fullShape.fs[0].slice(0, visibleCount);
+        
+        const partialShape = {
+            vs: fullShape.vs,
+            fs: [partialPath] // Передаем только часть пути
+        };
+
+        // 4. Рисуем
+        // Меняем цвет на золотистый/пергаментный для стиля манускрипта, если хотите
+        ctx.strokeStyle = "#FFD700"; 
+        drawMesh(partialShape, transformFn);
+    }
+};

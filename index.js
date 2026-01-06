@@ -13,6 +13,9 @@ radios.forEach(radio => {
             currentScene = Scene2;
         } else if (e.target.value === 'scene3') {
             currentScene = Scene3;
+        } else if (e.target.value === 'scene4') { 
+            Scene4.state.drawProgress = 0; 
+            currentScene = Scene4;
         }
     });
 });
