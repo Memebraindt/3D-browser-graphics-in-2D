@@ -1,64 +1,82 @@
 // index.js
-let currentScene = Scene1;
+
+// 1. Ссылки на UI элементы
+const trailCheckbox = document.getElementById('trailMode');
 const voynichControls = document.getElementById('voynich-controls');
 
-// Функция обновления видимости контролов
+// Глобальные слайдеры
+const globalDzInput = document.getElementById('global-dz');
+const globalSpeedInput = document.getElementById('global-speed');
+const lblGlobalDz = document.getElementById('val-global-dz');
+const lblGlobalSpeed = document.getElementById('val-global-speed');
+
+let currentScene = Scene1;
+
+// 2. Управление переключением сцен
 function updateUI() {
-    if (currentScene === Scene4) { // Теперь Scene4 вместо Scene3
-        voynichControls.style.display = 'block';
+    // Показываем панель Войнича только для сцены 4
+    if (currentScene === Scene4) {
+        voynichControls.classList.remove('hidden');
     } else {
-        voynichControls.style.display = 'none';
+        voynichControls.classList.add('hidden');
     }
 }
 
 const radios = document.querySelectorAll('input[name="scene"]');
 radios.forEach(radio => {
     radio.addEventListener('change', (e) => {
-        if (e.target.value === 'scene1') {
-            currentScene = Scene1;
-        } else if (e.target.value === 'scene2') {
-            currentScene = Scene2;
-        } else if (e.target.value === 'scene3') {
-            currentScene = Scene2;
-        } else if (e.target.value === 'scene4') { // Ваша новая сцена
-            Scene4.state.drawProgress = 0; 
+        const val = e.target.value;
+        if (val === 'scene1') currentScene = Scene1;
+        else if (val === 'scene2') currentScene = Scene2;
+        else if (val === 'scene3') currentScene = Scene3;
+        else if (val === 'scene4') {
+            Scene4.state.drawProgress = 0;
             currentScene = Scene4;
         }
-        updateUI(); // Вызываем при смене
+        updateUI();
     });
 });
 
-// Вызываем один раз при старте
+// Инициализация UI
 updateUI();
 
-// Игровой цикл
+// 3. Главный игровой цикл
 function frame() {
     const dt = 1 / CONSTANTS.FPS;
 
-    // ЛОГИКА ШЛЕЙФА:
-    // Если галочка стоит, мы очищаем экран лишь на 10% (0.1), 
-    // оставляя 90% предыдущего изображения.
-    // Если галочка не стоит, очищаем на 100% (1.0).
-    const opacity = trailCheckbox.checked ? 0.1 : 1.0;
+    // --- Чтение глобальных настроек ---
+    // Читаем значения слайдеров каждый кадр (или можно через addEventListener)
+    const globalParams = {
+        dz: parseFloat(globalDzInput.value),
+        speed: parseFloat(globalSpeedInput.value)
+    };
 
-    // 1. Очистка (с учетом режима)
+    // Обновляем цифры в UI
+    lblGlobalDz.innerText = globalParams.dz;
+    lblGlobalSpeed.innerText = globalParams.speed;
+
+
+    // --- Логика Шлейфа ---
+    const opacity = trailCheckbox && trailCheckbox.checked ? 0.1 : 1.0;
     clearCanvas(opacity);
 
-    // 2. Обновление логики текущей сцены
-    if (currentScene && currentScene.update) {
-        currentScene.update(dt);
+    // --- Обновление и Отрисовка ---
+    if (currentScene) {
+        // Передаем глобальные параметры в сцену
+        if (currentScene.update) {
+            currentScene.update(dt, globalParams);
+        }
+        
+        if (currentScene.draw) {
+            // Тонкие линии для режима шлейфа выглядят лучше
+            ctx.lineWidth = (trailCheckbox && trailCheckbox.checked) ? 1 : CONSTANTS.LINE_WIDTH;
+            
+            currentScene.draw(globalParams);
+        }
     }
 
-    // 3. Отрисовка
-    if (currentScene && currentScene.draw) {
-        // Небольшой хак: если включен шлейф, можно делать линии тоньше, 
-        // чтобы рисунок был более детальным
-        ctx.lineWidth = trailCheckbox.checked ? 1 : CONSTANTS.LINE_WIDTH;
-        
-        currentScene.draw();
-    }
     setTimeout(frame, 1000 / CONSTANTS.FPS);
 }
 
-// Запуск
+// Старт
 frame();
