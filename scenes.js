@@ -81,53 +81,63 @@ const Scene3 = {
 
 const Scene4 = {
     state: {
-        angle: 0,
-        drawProgress: 0, // От 0 до 1 (0% до 100% пути)
-        speed: 0.2,      // Скорость рисования
-        dz: 3.5          // Отдаление камеры
+        drawProgress: 0,
+        speed: 0.2,
+        dz: 4.0 // Камеру чуть дальше, так как разнос может быть большим
     },
-    update: function(dt) {
-        // Медленное вращение для 3D эффекта
-        this.state.angle += dt * 0.5;
+    
+    // Получаем элементы управления один раз (или можно искать их каждый кадр, но это медленнее)
+    inputs: {
+        offset: document.getElementById('input-offset'),
+        radius: document.getElementById('input-radius'),
+        arc: document.getElementById('input-arc'),
+        // Элементы для отображения цифр
+        lblOffset: document.getElementById('val-offset'),
+        lblRadius: document.getElementById('val-radius'),
+        lblArc: document.getElementById('val-arc'),
+    },
 
-        // Анимация рисования линии
-        // Если прогресс < 1, увеличиваем его. Если >= 1, сбрасываем (зацикливаем для красоты)
+    update: function(dt) {
+        // Обновляем цифры в UI (чтобы пользователь видел значение)
+        if(this.inputs.offset) {
+            this.inputs.lblOffset.innerText = this.inputs.offset.value;
+            this.inputs.lblRadius.innerText = this.inputs.radius.value;
+            this.inputs.lblArc.innerText = this.inputs.arc.value;
+        }
+
+        // Анимация прогресса отрисовки
         this.state.drawProgress += dt * this.state.speed;
-        if (this.state.drawProgress > 1.6) { // 1.2 чтобы была пауза, когда фигура полная
+        if (this.state.drawProgress > 1.6) {
             this.state.drawProgress = 0;
         }
     },
+
     draw: function() {
-        const { angle, drawProgress, dz } = this.state;
-        // angle = 0;
-        // Трансформация: вращаем и отодвигаем
+        const { drawProgress, dz } = this.state;
+        
+        // 1. Считываем текущие настройки слайдеров
+        const offset = parseFloat(this.inputs.offset.value);
+        const radius = parseFloat(this.inputs.radius.value);
+        const arcDeg = parseFloat(this.inputs.arc.value);
+
+        // 2. Генерируем фигуру на лету!
+        const fullShape = generateVoynichDynamic(offset, radius, arcDeg);
+
+        // 3. Отключаем вращение (оставляем только сдвиг по Z, чтобы видеть фигуру)
         const transformFn = (v) => {
-            let res = Math3D.rotateY(v, angle); // Вращаем как монету
-            res = Math3D.rotateZ(res, Math.sin(angle * 0.5) * 0.2); // Немного покачиваем
-            return Math3D.translateZ(res, dz);
+            return Math3D.translateZ(v, dz);
         };
 
-        // --- МАГИЯ ОТРИСОВКИ ЧАСТИ ФИГУРЫ ---
-        
-        // 1. Берем полную фигуру
-        const fullShape = VOYNICH_SHAPE;
-        
-        // 2. Вычисляем, сколько точек нужно нарисовать сейчас
-        // Всего точек в пути
+        // 4. Логика частичной отрисовки (как и раньше)
         const totalPoints = fullShape.fs[0].length; 
-        // Сколько рисуем (минимум 2 точки, максимум все)
         const visibleCount = Math.max(2, Math.floor(totalPoints * Math.min(1, drawProgress)));
-        
-        // 3. Создаем временную фигуру, у которой путь обрезан
         const partialPath = fullShape.fs[0].slice(0, visibleCount);
         
         const partialShape = {
             vs: fullShape.vs,
-            fs: [partialPath] // Передаем только часть пути
+            fs: [partialPath]
         };
 
-        // 4. Рисуем
-        // Меняем цвет на золотистый/пергаментный для стиля манускрипта, если хотите
         ctx.strokeStyle = "#FFD700"; 
         drawMesh(partialShape, transformFn);
     }

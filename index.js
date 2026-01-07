@@ -1,9 +1,16 @@
 // index.js
+let currentScene = Scene1;
+const voynichControls = document.getElementById('voynich-controls');
 
-let currentScene = Scene1; // По умолчанию
-const trailCheckbox = document.getElementById('trailMode'); // Получаем доступ к чекбоксу
+// Функция обновления видимости контролов
+function updateUI() {
+    if (currentScene === Scene4) { // Теперь Scene4 вместо Scene3
+        voynichControls.style.display = 'block';
+    } else {
+        voynichControls.style.display = 'none';
+    }
+}
 
-// Обработка переключения радио-кнопок
 const radios = document.querySelectorAll('input[name="scene"]');
 radios.forEach(radio => {
     radio.addEventListener('change', (e) => {
@@ -12,13 +19,17 @@ radios.forEach(radio => {
         } else if (e.target.value === 'scene2') {
             currentScene = Scene2;
         } else if (e.target.value === 'scene3') {
-            currentScene = Scene3;
-        } else if (e.target.value === 'scene4') { 
+            currentScene = Scene2;
+        } else if (e.target.value === 'scene4') { // Ваша новая сцена
             Scene4.state.drawProgress = 0; 
             currentScene = Scene4;
         }
+        updateUI(); // Вызываем при смене
     });
 });
+
+// Вызываем один раз при старте
+updateUI();
 
 // Игровой цикл
 function frame() {

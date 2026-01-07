@@ -10,64 +10,112 @@
             font-family: monospace;
             margin: 0;
             height: 100vh;
+            /* Flexbox для расположения Canvas и Меню рядом */
             display: flex;
-            flex-direction: column;
+            flex-direction: row; 
             align-items: center;
             justify-content: center;
         }
 
-        #controls {
-            margin-bottom: 20px;
-            padding: 10px;
-            border: 1px solid #333;
-            background: #101010;
-            border-radius: 8px;
-        }
-
-        label {
-            margin: 0 10px;
-            cursor: pointer;
-            font-size: 16px;
+        /* Левая колонка: Canvas */
+        #game-container {
+            position: relative;
         }
 
         canvas {
             background-color: #101010;
             box-shadow: 0 0 20px rgba(80, 255, 80, 0.1);
             border: 1px solid #333;
+            display: block;
+        }
+
+        /* Правая колонка: Все настройки */
+        #ui-panel {
+            width: 300px;
+            margin-left: 20px;
+            padding: 20px;
+            background: #101010;
+            border: 1px solid #333;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .control-group {
+            border-bottom: 1px solid #333;
+            padding-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            cursor: pointer;
+        }
+        
+        /* Стили для слайдеров */
+        .slider-container {
+            margin-top: 10px;
+        }
+        input[type=range] {
+            width: 100%;
+            accent-color: #50FF50;
+        }
+        .val-display {
+            float: right;
+            color: #fff;
+        }
+
+        /* Скрываем настройки Voynich по умолчанию */
+        #voynich-controls {
+            display: none; 
         }
     </style>
 </head>
 <body>
 
-    <div id="controls">
-        <span>Choose your destiny: </span>
-        <label>
-            <input type="radio" name="scene" value="scene1" checked> 
-            Simple Cube
-        </label>
-        <label>
-            <input type="radio" name="scene" value="scene2"> 
-            Simple Pyramid
-        </label>
-        <label>
-            <input type="radio" name="scene" value="scene3"> 
-            Chaos Cube
-        </label>
-        <label>
-            <input type="radio" name="scene" value="scene4"> 
-            MemeBrain Loops
-        </label>
-        <div style="margin-top: 10px; border-top: 1px solid #333; padding-top: 10px;">
-        <label>
-            <input type="checkbox" id="trailMode"> 
-            Trails (Motion blur)
-        </label>
+    <div id="game-container">
+        <canvas id="game"></canvas>
+    </div>
+
+    <div id="ui-panel">
+        <div class="control-group">
+            <h3>Сценарии</h3>
+            <label><input type="radio" name="scene" value="scene1" checked> Chaos Cube</label>
+            <label><input type="radio" name="scene" value="scene2"> Simple Pyramid</label>
+            <label><input type="radio" name="scene" value="scene3"> Cube</label>
+            <label><input type="radio" name="scene" value="scene4"> Voynich Shape</label>
+        </div>
+
+        <div class="control-group">
+            <h3>Общие</h3>
+            <label><input type="checkbox" id="trailMode"> Режим шлейфа (Trails)</label>
+        </div>
+
+        <!-- Настройки специально для фигуры Войнича -->
+        <div id="voynich-controls" class="control-group">
+            <h3>Настройки фигуры</h3>
+            
+            <div class="slider-container">
+                <label>Разнос центров (Offset) <span id="val-offset" class="val-display">1.1</span></label>
+                <input type="range" id="input-offset" min="0" max="5" step="0.01" value="1.11">
+            </div>
+
+            <div class="slider-container">
+                <label>Радиус дуги (Radius) <span id="val-radius" class="val-display">1.0</span></label>
+                <input type="range" id="input-radius" min="0.1" max="3" step="0.1" value="1.0">
+            </div>
+
+            <div class="slider-container">
+                <label>Угол дуги (градусы) <span id="val-arc" class="val-display">180</span></label>
+                <!-- От 10 до 360 градусов -->
+                <input type="range" id="input-arc" min="10" max="360" step="1" value="180">
+            </div>
         </div>
     </div>
 
-    <canvas id="game"></canvas>
-
-    <!-- Подключаем скрипты в правильном порядке -->
     <script src="shapes.js"></script>
     <script src="engine.js"></script>
     <script src="scenes.js"></script>
