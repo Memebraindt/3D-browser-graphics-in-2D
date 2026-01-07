@@ -14,3 +14,6 @@ Changes:
 - **DRY Implementation**: Unified rendering logic using `drawMesh` and functional transformations.
 - **UI Improvements**: Centered canvas layout and added Scene Switcher (radio buttons).
 - **New Feature**: Added "Trail Mode" (Alpha Trails) to visualize vertex paths without clearing the screen completely.
+
+Refactoring v0.3
+... TBA
